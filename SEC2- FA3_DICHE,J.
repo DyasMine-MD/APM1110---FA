@@ -9,7 +9,7 @@ output:
     keep_tex: true
 ---
 ```{r}
-# Problem 5: compute overall percentage of relevant images
+# Problem 5: Compute overall percentage of relevant images
 supply_percent <- c(15, 20, 25, 40)      # sensor supply percentages
 relevance_percent <- c(50, 60, 80, 85)   # relevance percentages per sensor
 
