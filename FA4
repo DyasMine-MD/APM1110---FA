@@ -1,0 +1,48 @@
+---
+title: "SEC2-FA4_GROUP2_DICHE,J."
+subtitle: 
+author: "Jasmine Diche"
+date: "September 10, 2026"
+output: 
+  pdf_document:
+    latex_engine: xelatex
+    keep_tex: true
+---
+```{r}
+#2.Binary channel calculations
+P_tx0 <- 0.70
+P_tx1 <- 0.30
+P_0_to_1 <- 0.05   # transmitted 0 but received 1
+P_1_to_1 <- 0.75   # transmitted 1 and received 1
+
+# (a) Probability a 1 was received
+P_recv1 <- P_tx0 * P_0_to_1 + P_tx1 * P_1_to_1
+
+# (b) Probability a 1 was transmitted given a 1 was received (Bayes' rule)
+P_tx1_given_recv1 <- (P_tx1 * P_1_to_1) / P_recv1
+
+# Print results
+cat("Binary channel results\n")
+cat(sprintf("P(received 1) = %.3f (%.1f%%)\n", P_recv1, 100 * P_recv1))
+cat(sprintf("P(transmitted 1 | received 1) = %.4f (%.2f%%)\n", 
+            P_tx1_given_recv1, 100 * P_tx1_given_recv1))
+```
+```{r}
+# Employees and error rates
+share <- c(Jane = 0.10, Amy = 0.30, Ava = 0.60)
+err_rate <- c(Jane = 0.08, Amy = 0.05, Ava = 0.01)
+
+# Overall error probability (law of total probability)
+P_error <- sum(share * err_rate)
+
+# Posterior probabilities P(author | error) via Bayes' rule
+posterior <- (share * err_rate) / P_error
+
+# Print results
+cat("Employees and error results\n")
+cat(sprintf("Overall error rate = %.4f (%.2f%%)\n\n", P_error, 100 * P_error))
+cat("Posterior probabilities given an error:\n")
+print(round(posterior, 4))
+cat(sprintf("\nMost likely author given an error: %s (%.2f%%)\n",
+            names(which.max(posterior)), 100
+```
