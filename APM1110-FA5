@@ -1,0 +1,249 @@
+---
+title: "APM110_FA5_DICHE_JASMINE"
+subtitle:
+author: "Jasmine Diche"
+date: "September 18, 2026"
+output:
+  pdf_document:
+    latex_engine: xelatex
+    keep_tex: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#1. Discrete Random Variables
+
+**PMF Definition:**
+$$P(X = x) = \begin{cases} k(2x + 1), & x \in \{1, 2, 3, 4\} \\ 0, & \text{otherwise} \end{cases}$$
+
+#(a) Find the value of $k$
+
+The total probability must sum to $1$:
+$$\sum_{x=1}^{4} P(X = x) = 1$$
+
+```{r}
+x <- 1:4
+pmf_unscaled <- 2 * x + 1
+k_denom <- sum(pmf_unscaled)
+k <- 1 / k_denom
+px <- k * pmf_unscaled
+```
+
+Calculate individual probabilities in terms of $k$:
+
+* $P(X = 1) = k(2(1) + 1) = 3k$
+* $P(X = 2) = k(2(2) + 1) = 5k$
+* $P(X = 3) = k(2(3) + 1) = 7k$
+* $P(X = 4) = k(2(4) + 1) = 9k$
+
+Summing these gives:
+$$3k + 5k + 7k + 9k = `r k_denom`k = 1 \implies k = \frac{1}{`r k_denom`} = `r round(k, 4)`$$
+
+Thus, the non-zero probabilities are:
+$$P(X = 1) = \frac{3}{24}, \quad P(X = 2) = \frac{5}{24}, \quad P(X = 3) = \frac{7}{24}, \quad P(X = 4) = \frac{9}{24}$$
+
+---
+
+### (b) Compute $E[X]$ and $\text{Var}(X)$
+
+```{r}
+E_X <- sum(x * px)
+E_X2 <- sum(x^2 * px)
+Var_X <- E_X2 - (E_X)^2
+```
+
+**Expected Value $E[X]$:**
+$$E[X] = \sum x \cdot P(X = x)$$
+$$E[X] = 1\left(\frac{3}{24}\right) + 2\left(\frac{5}{24}\right) + 3\left(\frac{7}{24}\right) + 4\left(\frac{9}{24}\right) = \frac{3 + 10 + 21 + 36}{24} = \frac{70}{24} = \frac{35}{12} \approx `r round(E_X, 4)`$$
+
+**Expected Value of $X^2$, $E[X^2]$:**
+$$E[X^2] = \sum x^2 \cdot P(X = x)$$
+$$E[X^2] = 1^2\left(\frac{3}{24}\right) + 2^2\left(\frac{5}{24}\right) + 3^2\left(\frac{7}{24}\right) + 4^2\left(\frac{9}{24}\right) = \frac{3 + 20 + 63 + 144}{24} = \frac{230}{24} = \frac{115}{12} \approx `r round(E_X2, 4)`$$
+
+**Variance $\text{Var}(X)$:**
+$$\text{Var}(X) = E[X^2] - (E[X])^2 = \frac{115}{12} - \left(\frac{35}{12}\right)^2 = \frac{1380}{144} - \frac{1225}{144} = \frac{155}{144} \approx `r round(Var_X, 4)`$$
+
+---
+
+### (c) Calculate $P(X \ge 3)$
+
+```{r}
+p_x_ge_3 <- sum(px[x >= 3])
+```
+
+$$P(X \ge 3) = P(X = 3) + P(X = 4) = \frac{7}{24} + \frac{9}{24} = \frac{16}{24} = \frac{2}{3} \approx `r round(p_x_ge_3, 4)`$$
+
+---
+
+## 2. Binomial Distribution
+
+Let $X \sim \text{Binomial}(n = 20, p = 0.08)$, where $q = 1 - p = 0.92$.
+$$P(X = k) = \binom{20}{k} (0.08)^k (0.92)^{20-k}$$
+
+```{r}
+n <- 20
+p <- 0.08
+```
+
+### (a) Probability that exactly 2 requests are malicious: $P(X = 2)$
+
+```{r}
+p_eq_2 <- dbinom(2, size = n, prob = p)
+```
+
+$$P(X = 2) = \binom{20}{2} (0.08)^2 (0.92)^{18} = 190 \times 0.0064 \times 0.2229 \approx `r round(p_eq_2, 4)`$$
+
+---
+
+### (b) Probability that at least 3 requests are malicious: $P(X \ge 3)$
+
+Using the complement:
+$$P(X \ge 3) = 1 - [P(X = 0) + P(X = 1) + P(X = 2)]$$
+
+```{r}
+p0 <- dbinom(0, size = n, prob = p)
+p1 <- dbinom(1, size = n, prob = p)
+p2 <- dbinom(2, size = n, prob = p)
+p_lt_3 <- pbinom(2, size = n, prob = p)
+p_ge_3 <- pbinom(2, size = n, prob = p, lower.tail = FALSE)
+```
+
+Calculate individual terms:
+
+* $P(X = 0) = \binom{20}{0} (0.08)^0 (0.92)^{20} \approx `r round(p0, 4)`$
+* $P(X = 1) = \binom{20}{1} (0.08)^1 (0.92)^{19} = 20 \times 0.08 \times 0.2051 \approx `r round(p1, 4)`$
+* $P(X = 2) \approx `r round(p2, 4)`$
+
+Sum of $P(X < 3)$:
+$$P(X < 3) = `r round(p0, 4)` + `r round(p1, 4)` + `r round(p2, 4)` = `r round(p_lt_3, 4)`$$
+
+$$P(X \ge 3) = 1 - `r round(p_lt_3, 4)` = `r round(p_ge_3, 4)`$$
+
+---
+
+### (c) Mean and Standard Deviation
+
+```{r}
+mean_bin <- n * p
+sd_bin <- sqrt(n * p * (1 - p))
+```
+
+* **Mean ($\mu$):**
+  $$\mu = n \cdot p = 20 \times 0.08 = `r mean_bin`$$
+
+* **Standard Deviation ($\sigma$):**
+  $$\sigma = \sqrt{n \cdot p \cdot (1 - p)} = \sqrt{20 \times 0.08 \times 0.92} = \sqrt{1.472} \approx `r round(sd_bin, 4)`$$
+
+---
+
+## 3. Poisson Distribution
+
+### (a) Probability of receiving exactly 6 hits in 1 minute ($\lambda = 4.5$)
+
+$$P(X = k) = \frac{e^{-\lambda} \lambda^k}{k!}$$
+
+```{r}
+lambda_1min <- 4.5
+p_eq_6 <- dpois(6, lambda = lambda_1min)
+```
+
+$$P(X = 6) = \frac{e^{-4.5} (4.5)^6}{6!} = \frac{0.011109 \times 8303.7656}{720} \approx `r round(p_eq_6, 4)`$$
+
+---
+
+### (b) Probability of receiving at most 2 hits in 1 minute ($P(X \le 2)$)
+
+$$P(X \le 2) = P(X = 0) + P(X = 1) + P(X = 2)$$
+
+```{r}
+poiss0 <- dpois(0, lambda = lambda_1min)
+poiss1 <- dpois(1, lambda = lambda_1min)
+poiss2 <- dpois(2, lambda = lambda_1min)
+p_le_2 <- ppois(2, lambda = lambda_1min)
+```
+
+* $P(X = 0) = \frac{e^{-4.5} (4.5)^0}{0!} = e^{-4.5} \approx `r round(poiss0, 4)`$
+* $P(X = 1) = \frac{e^{-4.5} (4.5)^1}{1!} = 4.5 \times 0.0111 \approx `r round(poiss1, 4)`$
+* $P(X = 2) = \frac{e^{-4.5} (4.5)^2}{2!} = \frac{20.25}{2} \times 0.0111 \approx `r round(poiss2, 4)`$
+
+$$P(X \le 2) = `r round(poiss0, 4)` + `r round(poiss1, 4)` + `r round(poiss2, 4)` = `r round(p_le_2, 4)`$$
+
+---
+
+### (c) Probability of receiving more than 10 hits in a 2-minute interval
+
+Adjust rate for a $t = 2$ minute interval:
+$$\lambda_{2\text{min}} = 4.5 \times 2 = 9.0$$
+
+```{r}
+lambda_2min <- 9.0
+p_le_10 <- ppois(10, lambda = lambda_2min)
+p_gt_10 <- ppois(10, lambda = lambda_2min, lower.tail = FALSE)
+```
+
+We seek $P(Y > 10) = 1 - P(Y \le 10)$, where $Y \sim \text{Poisson}(\lambda = 9)$:
+$$P(Y \le 10) = \sum_{k=0}^{10} \frac{e^{-9} \cdot 9^k}{k!} \approx `r round(p_le_10, 4)`$$
+
+$$P(Y > 10) = 1 - `r round(p_le_10, 4)` = `r round(p_gt_10, 4)`$$
+
+---
+
+## 4. Continuous Probability & Normal Distribution
+
+Let $X \sim \mathcal{N}(\mu = 120, \sigma = 15)$. Standardize to $Z = \frac{X - \mu}{\sigma}$.
+
+```{r}
+mu <- 120
+sigma <- 15
+```
+
+### (a) Proportion of queries taking longer than 135 ms: $P(X > 135)$
+
+```{r}
+z135 <- (135 - mu) / sigma
+p_gt_135 <- pnorm(135, mean = mu, sd = sigma, lower.tail = FALSE)
+```
+
+$$Z = \frac{135 - 120}{15} = `r z135`$$
+$$P(X > 135) = P(Z > 1.0) = 1 - \Phi(1.0) = 1 - 0.8413 = `r round(p_gt_135, 4)`$$
+
+---
+
+### (b) Probability taking between 100 and 130 ms: $P(100 < X < 130)$
+
+Standardize lower and upper bounds:
+
+```{r}
+z_low <- (100 - mu) / sigma
+z_high <- (130 - mu) / sigma
+phi_high <- pnorm(z_high)
+phi_low <- pnorm(z_low)
+p_between <- phi_high - phi_low
+```
+
+* $Z_1 = \frac{100 - 120}{15} = -\frac{20}{15} \approx `r round(z_low, 2)`$
+* $Z_2 = \frac{130 - 120}{15} = \frac{10}{15} \approx `r round(z_high, 2)`$
+
+Calculate probabilities from standard normal distribution tables:
+$$\Phi(0.67) \approx `r round(phi_high, 4)`$$
+$$\Phi(-1.33) \approx `r round(phi_low, 4)`$$
+
+$$P(-1.33 < Z < 0.67) = \Phi(0.67) - \Phi(-1.33) = `r round(phi_high, 4)` - `r round(phi_low, 4)` = `r round(p_between, 4)`$$
+
+---
+
+### (c) 95th Percentile of query processing times
+
+Find $x$ such that $P(X \le x) = 0.95$:
+
+```{r}
+z_95 <- qnorm(0.95)
+p95 <- qnorm(0.95, mean = mu, sd = sigma)
+```
+
+From standard normal distribution tables, $P(Z \le z) = 0.95 \implies z \approx `r round(z_95, 3)`$.
+
+Convert back to $X$:
+$$x = \mu + z \cdot \sigma = 120 + (`r round(z_95, 3)` \times 15) = 120 + `r round(z_95 * 15, 3)` = `r round(p95, 3)`\text{ ms}$$
